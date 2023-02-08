@@ -32,7 +32,7 @@ pipeline:
                   spec:
                     shell: Sh
                     command: |-
-                      conda install -n test ffmpeg python=3.10 pytorch=1.13.1 cpuonly -c pytorch
+                      conda install -n test ffmpeg python=<+matrix.python_version> pytorch=<+matrix.pytorch_version> cpuonly -c pytorch
                       export PATH="$CONDA/envs/test/bin:$PATH"
                       pip install pytest
                       pip install .
