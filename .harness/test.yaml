@@ -1,0 +1,59 @@
+pipeline:
+  name: Open Source App - Whisper Python Package
+  identifier: opensourceappwhisperpythonpackage
+  projectIdentifier: martinansong
+  orgIdentifier: CI_Training
+  description: This pipeline is based on the 'test.yml' GitHub Actions workflow from https://github.com/openai/whisper
+  properties:
+    ci:
+      codebase:
+        connectorRef: account.mansong
+        repoName: whisper
+        build: <+input>
+  stages:
+    - stage:
+        description: This stage has two steps that test the python package.
+        identifier: ci_build
+        name: CI Build
+        spec:
+          cloneCodebase: true
+          execution:
+            steps:
+              - step:
+                  identifier: conda
+                  name: Conda
+                  spec:
+                    description: This step runs the conda-incubator/setup-miniconda GitHub Action
+                    uses: conda-incubator/setup-miniconda@v2
+                  type: Action
+              - step:
+                  identifier: test
+                  name: Test
+                  spec:
+                    shell: Sh
+                    command: |-
+                      conda install -n test ffmpeg python=3.10 pytorch=1.13.1 cpuonly -c pytorch
+                      export PATH="$CONDA/envs/test/bin:$PATH"
+                      pip install pytest
+                      pip install .
+                      pytest --durations=0 -vv -k 'not test_transcribe or test_transcribe[tiny] or test_transcribe[tiny.en]'
+                  type: Run
+          platform:
+            os: Linux
+            arch: Amd64
+          runtime:
+            type: Cloud
+            spec: {}
+        type: CI
+        strategy:
+          matrix:
+            python-version:
+              - "3.8"
+              - "3.9"
+              - "3.10"
+            pytorch-version:
+              - 1.10.2
+              - 1.13.1
+            exclude:
+              - python-version: "3.10"
+                pytorch-version: 1.10.2
